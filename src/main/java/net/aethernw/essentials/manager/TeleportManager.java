@@ -95,10 +95,6 @@ public class TeleportManager implements Listener {
         pending.put(player.getUniqueId(), task);
     }
 
-    public void cancel(Player player) {
-        cancelPending(player);
-    }
-
     public void shutdown() {
         for (Map.Entry<UUID, BukkitTask> entry : pending.entrySet()) {
             Player player = Bukkit.getPlayer(entry.getKey());

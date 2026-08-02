@@ -46,11 +46,17 @@ public class DatabaseManager {
         }
     }
 
+    private static final int CREATE_TABLES_RETRIES = 12;
+
     public void createTables(Runnable done) {
         if (dataSource == null) {
             plugin.getLogger().warning("MySQL bağlantı havuzu hazır değil, tablo oluşturulamadı");
             return;
         }
+        createTablesAsync(done, 0);
+    }
+
+    private void createTablesAsync(final Runnable done, final int attempt) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
             public void run() {
@@ -66,7 +72,17 @@ public class DatabaseManager {
                             + "PRIMARY KEY (name)) DEFAULT CHARSET=utf8mb4");
                     done.run();
                 } catch (SQLException e) {
-                    plugin.getLogger().log(Level.SEVERE, "aether_warps tablosu oluşturulamadı", e);
+                    if (attempt < CREATE_TABLES_RETRIES - 1) {
+                        plugin.getLogger().log(Level.WARNING, "aether_warps tablosu oluşturulamadı, yeniden deneniyor (" + (attempt + 1) + "/" + CREATE_TABLES_RETRIES + ")", e);
+                        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, new Runnable() {
+                            @Override
+                            public void run() {
+                                createTablesAsync(done, attempt + 1);
+                            }
+                        }, 200L);
+                    } else {
+                        plugin.getLogger().log(Level.SEVERE, "aether_warps tablosu " + CREATE_TABLES_RETRIES + " denemeden sonra oluşturulamadı, warp sistemi devre dışı", e);
+                    }
                 }
             }
         });
@@ -108,9 +124,10 @@ public class DatabaseManager {
         });
     }
 
-    public void saveWarp(WarpLocation warp) {
+    public void saveWarp(WarpLocation warp, final Runnable onFail) {
         if (dataSource == null) {
             plugin.getLogger().warning("MySQL bağlantı havuzu hazır değil, warp kaydedilemedi: " + warp.getName());
+            runOnMainThread(onFail);
             return;
         }
         Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -128,14 +145,16 @@ public class DatabaseManager {
                     statement.executeUpdate();
                 } catch (SQLException e) {
                     plugin.getLogger().log(Level.WARNING, "Warp kaydedilemedi: " + warp.getName(), e);
+                    runOnMainThread(onFail);
                 }
             }
         });
     }
 
-    public void deleteWarp(String name) {
+    public void deleteWarp(String name, final Runnable onFail) {
         if (dataSource == null) {
             plugin.getLogger().warning("MySQL bağlantı havuzu hazır değil, warp silinemedi: " + name);
+            runOnMainThread(onFail);
             return;
         }
         Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -147,9 +166,17 @@ public class DatabaseManager {
                     statement.executeUpdate();
                 } catch (SQLException e) {
                     plugin.getLogger().log(Level.WARNING, "Warp silinemedi: " + name, e);
+                    runOnMainThread(onFail);
                 }
             }
         });
+    }
+
+    private void runOnMainThread(final Runnable onFail) {
+        if (onFail == null) {
+            return;
+        }
+        Bukkit.getScheduler().runTask(plugin, onFail);
     }
 
     public void shutdown() {

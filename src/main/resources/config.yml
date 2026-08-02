@@ -7,13 +7,6 @@ database:
   pool-size: 10
   connection-timeout: 5000
 
-redis:
-  enabled: false
-  host: localhost
-  port: 6379
-  password: ''
-  database: 0
-
 spawn:
   world: world
   x: 0.0

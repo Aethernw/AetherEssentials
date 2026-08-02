@@ -1,7 +1,6 @@
 package net.aethernw.essentials.config;
 
 import net.aethernw.essentials.AetherEssentials;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -57,11 +56,6 @@ public class ConfigManager {
 
     public void setSpawnLocation(Location location) {
         config.set("spawn", location);
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                plugin.saveConfig();
-            }
-        });
+        plugin.saveConfig();
     }
 }

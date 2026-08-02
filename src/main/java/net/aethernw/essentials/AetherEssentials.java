@@ -2,7 +2,6 @@ package net.aethernw.essentials;
 
 import net.aethernw.essentials.config.ConfigManager;
 import net.aethernw.essentials.database.DatabaseManager;
-import net.aethernw.essentials.database.RedisManager;
 import net.aethernw.essentials.manager.TpaManager;
 import net.aethernw.essentials.manager.TpaManager.TpaRequest;
 import net.aethernw.essentials.manager.TeleportManager;
@@ -33,7 +32,6 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
 
     private ConfigManager configManager;
     private DatabaseManager databaseManager;
-    private RedisManager redisManager;
     private WarpManager warpManager;
     private TpaManager tpaManager;
     private TeleportManager teleportManager;
@@ -44,7 +42,6 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
 
         configManager = new ConfigManager(this);
         databaseManager = new DatabaseManager(this);
-        redisManager = new RedisManager(this);
         warpManager = new WarpManager(this);
         tpaManager = new TpaManager(this);
         teleportManager = new TeleportManager(this);
@@ -79,9 +76,6 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         }
         if (databaseManager != null) {
             databaseManager.shutdown();
-        }
-        if (redisManager != null) {
-            redisManager.shutdown();
         }
     }
 
@@ -247,8 +241,14 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("warp-invalid-name"));
             return;
         }
-        warpManager.setWarp(args[0], player.getLocation());
-        player.sendMessage(configManager.message("warp-set").replace("{warp}", args[0]));
+        String name = args[0].toLowerCase();
+        warpManager.setWarp(name, player.getLocation(), new Runnable() {
+            @Override
+            public void run() {
+                player.sendMessage(configManager.message("warp-save-failed"));
+            }
+        });
+        player.sendMessage(configManager.message("warp-set").replace("{warp}", name));
     }
 
     private void warpCommand(CommandSender sender, String[] args) {
@@ -300,11 +300,17 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             sender.sendMessage(configManager.message("delwarp-usage"));
             return;
         }
-        if (!warpManager.removeWarp(args[0])) {
+        String name = args[0].toLowerCase();
+        if (!warpManager.removeWarp(name, new Runnable() {
+            @Override
+            public void run() {
+                sender.sendMessage(configManager.message("warp-delete-failed"));
+            }
+        })) {
             sender.sendMessage(configManager.message("warp-not-found"));
             return;
         }
-        sender.sendMessage(configManager.message("warp-deleted").replace("{warp}", args[0]));
+        sender.sendMessage(configManager.message("warp-deleted").replace("{warp}", name));
     }
 
     private void spawnCommand(CommandSender sender) {
@@ -345,6 +351,10 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             return;
         }
         Player player = (Player) sender;
+        if (args.length > 1) {
+            player.sendMessage(configManager.message("invalid-usage"));
+            return;
+        }
         if (args.length > 0 && args[0].equalsIgnoreCase("all")) {
             if (!player.hasPermission("aether.command.repair.all")) {
                 player.sendMessage(configManager.message("no-permission"));
@@ -549,10 +559,6 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
 
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
-    }
-
-    public RedisManager getRedisManager() {
-        return redisManager;
     }
 
     public WarpManager getWarpManager() {

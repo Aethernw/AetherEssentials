@@ -2,7 +2,6 @@ package net.aethernw.essentials.manager;
 
 import net.aethernw.essentials.AetherEssentials;
 import net.aethernw.essentials.model.WarpLocation;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.util.ArrayList;
@@ -33,43 +32,25 @@ public class WarpManager {
                     warps.put(warp.getName(), warp);
                 }
                 invalidateWarpNames();
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        plugin.getRedisManager().cacheWarps(loaded);
-                    }
-                });
                 plugin.getLogger().info(loaded.size() + " warp yüklendi.");
             }
         });
     }
 
-    public void setWarp(String name, Location location) {
+    public void setWarp(String name, Location location, final Runnable onFail) {
         WarpLocation warp = WarpLocation.fromLocation(name.toLowerCase(), location);
         warps.put(warp.getName(), warp);
         invalidateWarpNames();
-        plugin.getDatabaseManager().saveWarp(warp);
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                plugin.getRedisManager().cacheWarp(warp);
-            }
-        });
+        plugin.getDatabaseManager().saveWarp(warp, onFail);
     }
 
-    public boolean removeWarp(String name) {
+    public boolean removeWarp(String name, final Runnable onFail) {
         final String key = name.toLowerCase();
         if (warps.remove(key) == null) {
             return false;
         }
         invalidateWarpNames();
-        plugin.getDatabaseManager().deleteWarp(key);
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                plugin.getRedisManager().removeWarp(key);
-            }
-        });
+        plugin.getDatabaseManager().deleteWarp(key, onFail);
         return true;
     }
 
