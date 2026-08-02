@@ -1,7 +1,9 @@
 package net.aethernw.essentials.manager;
 
 import net.aethernw.essentials.AetherEssentials;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -34,22 +36,47 @@ public class TeleportManager implements Listener {
             return;
         }
         cancelPending(player);
-        int seconds = plugin.getConfigManager().getTeleportDelaySeconds();
+        final int seconds = plugin.getConfigManager().getTeleportDelaySeconds();
         player.sendMessage(plugin.getConfigManager().message("teleport-delay").replace("{seconds}", String.valueOf(seconds)));
+        player.sendActionBar(plugin.getConfigManager().message("teleport-actionbar").replace("{seconds}", String.valueOf(seconds)));
+        playCountdownSound(player, seconds);
+        final int[] remaining = {seconds};
         BukkitTask task = new BukkitRunnable() {
             @Override
             public void run() {
-                pending.remove(player.getUniqueId());
-                if (player.isOnline()) {
-                    teleportNow(player, location, message);
+                remaining[0]--;
+                if (remaining[0] <= 0) {
+                    pending.remove(player.getUniqueId());
+                    player.sendActionBar("");
+                    if (player.isOnline()) {
+                        teleportNow(player, location, message);
+                    }
+                    cancel();
+                    return;
                 }
+                player.sendActionBar(plugin.getConfigManager().message("teleport-actionbar")
+                        .replace("{seconds}", String.valueOf(remaining[0])));
+                playCountdownSound(player, remaining[0]);
             }
-        }.runTaskLater(plugin, seconds * 20L);
+        }.runTaskTimer(plugin, 20L, 20L);
         pending.put(player.getUniqueId(), task);
     }
 
     public void cancel(Player player) {
         cancelPending(player);
+    }
+
+    public void shutdown() {
+        for (UUID uuid : pending.keySet()) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                player.sendActionBar("");
+            }
+        }
+        for (BukkitTask task : pending.values()) {
+            task.cancel();
+        }
+        pending.clear();
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -85,6 +112,21 @@ public class TeleportManager implements Listener {
         BukkitTask task = pending.remove(player.getUniqueId());
         if (task != null) {
             task.cancel();
+            player.sendActionBar("");
+        }
+    }
+
+    private void playCountdownSound(Player player, int remaining) {
+        switch (remaining) {
+            case 1:
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.5f);
+                break;
+            case 2:
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 0.5f, 1.0f);
+                break;
+            case 3:
+                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
+                break;
         }
     }
 
@@ -93,6 +135,7 @@ public class TeleportManager implements Listener {
             @Override
             public void accept(Boolean success) {
                 if (success) {
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.5f, 1.0f);
                     player.sendMessage(message);
                 }
             }

@@ -74,6 +74,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onDisable() {
+        teleportManager.shutdown();
         databaseManager.shutdown();
         redisManager.shutdown();
     }
