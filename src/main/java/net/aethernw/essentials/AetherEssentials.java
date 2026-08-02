@@ -64,7 +64,6 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         this.getCommand("tpaccept").setTabCompleter(this);
         this.getCommand("tpadeny").setTabCompleter(this);
 
-        tpaManager.start();
         databaseManager.createTables(new Runnable() {
             @Override
             public void run() {

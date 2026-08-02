@@ -3,118 +3,118 @@ version: '1.0.0'
 main: net.aethernw.essentials.AetherEssentials
 api-version: '1.20'
 authors: [ToprakDev]
-description: Yüksek performanslı essentials eklentisi
+description: High performance essentials plugin
 
 commands:
   craft:
-    description: Sanal çalışma masası açar
+    description: Open a virtual crafting table
     usage: /craft
     aliases: [workbench, wb]
     permission: aether.command.craft
   enderchest:
-    description: Ender Sandık envanterini açar
-    usage: /enderchest [oyuncu]
+    description: Open your Ender Chest
+    usage: /enderchest [player]
     aliases: [ec]
     permission: aether.command.enderchest
   setwarp:
-    description: Yeni bir warp oluşturur
-    usage: /setwarp <isim>
+    description: Create a new warp
+    usage: /setwarp <name>
     permission: aether.command.setwarp
   warp:
-    description: Bir warpa ışınlanır
-    usage: /warp <isim>
+    description: Teleport to a warp
+    usage: /warp <name>
     permission: aether.command.warp
   warps:
-    description: Warp listesini gösterir
+    description: List all warps
     usage: /warps
     permission: aether.command.warps
   delwarp:
-    description: Bir warpı siler
-    usage: /delwarp <isim>
+    description: Delete a warp
+    usage: /delwarp <name>
     permission: aether.command.delwarp
   spawn:
-    description: Spawn noktasına ışınlanır
+    description: Teleport to the spawn point
     usage: /spawn
     permission: aether.command.spawn
   setspawn:
-    description: Spawn noktasını ayarlar
+    description: Set the spawn point
     usage: /setspawn
     permission: aether.command.setspawn
   repair:
-    description: Eşyaları onarır
+    description: Repair your items
     usage: /repair [all]
     permission: aether.command.repair
   feed:
-    description: Açlık ve doygunluğu doldurur
-    usage: /feed [oyuncu]
+    description: Restore hunger and saturation
+    usage: /feed [player]
     permission: aether.command.feed
   tpa:
-    description: Bir oyuncuya ışınlanma isteği gönderir
-    usage: /tpa <oyuncu>
+    description: Send a teleport request to a player
+    usage: /tpa <player>
     permission: aether.command.tpa
   tpaccept:
-    description: Işınlanma isteğini kabul eder
-    usage: /tpaccept [oyuncu]
+    description: Accept a teleport request
+    usage: /tpaccept [player]
     permission: aether.command.tpa
   tpadeny:
-    description: Işınlanma isteğini reddeder
-    usage: /tpadeny [oyuncu]
+    description: Deny a teleport request
+    usage: /tpadeny [player]
     permission: aether.command.tpa
   tpacancel:
-    description: Gönderilen ışınlanma isteklerini iptal eder
+    description: Cancel your sent teleport requests
     usage: /tpacancel
     permission: aether.command.tpa
 
 permissions:
   aether.command.craft:
-    description: Sanal çalışma masası açma izni
+    description: Open a virtual crafting table
     default: true
   aether.command.enderchest:
-    description: Ender Sandık açma izni
+    description: Open your Ender Chest
     default: true
   aether.command.enderchest.others:
-    description: Başka oyuncunun Ender Sandığını açma izni
+    description: Open other players' Ender Chests
     default: op
   aether.command.setwarp:
-    description: Warp oluşturma izni
+    description: Create warps
     default: op
   aether.command.warp:
-    description: Warpa ışınlanma izni
+    description: Teleport to warps
     default: true
   aether.command.warps:
-    description: Warp listesini görme izni
+    description: View the warp list
     default: true
   aether.command.delwarp:
-    description: Warp silme izni
+    description: Delete warps
     default: op
   aether.command.spawn:
-    description: Spawna ışınlanma izni
+    description: Teleport to spawn
     default: true
   aether.command.setspawn:
-    description: Spawn ayarlama izni
+    description: Set the spawn point
     default: op
   aether.command.repair:
-    description: Eldeki eşyayı onarma izni
+    description: Repair the held item
     default: true
   aether.command.repair.all:
-    description: Tüm envanteri onarma izni
+    description: Repair the full inventory
     default: op
     children:
       aether.command.repair: true
   aether.command.feed:
-    description: Kendini doyurma izni
+    description: Feed yourself
     default: true
   aether.command.feed.others:
-    description: Başkasını doyurma izni
+    description: Feed other players
     default: op
   aether.command.tpa:
-    description: Işınlanma isteği gönderme izni
+    description: Teleport request commands
     default: true
   aether.teleport.bypass:
-    description: Spawn ve warp ışınlanma gecikmesinden muaf olma izni
+    description: Bypass the spawn/warp teleport delay
     default: op
   aether.*:
-    description: Tüm AetherEssentials izinleri
+    description: All AetherEssentials permissions
     default: op
     children:
       aether.command.craft: true

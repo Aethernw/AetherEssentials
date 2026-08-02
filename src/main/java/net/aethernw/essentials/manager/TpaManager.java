@@ -18,18 +18,10 @@ public class TpaManager {
 
     private final AetherEssentials plugin;
     private final ConcurrentHashMap<UUID, TpaRequest> requests = new ConcurrentHashMap<>();
+    private org.bukkit.scheduler.BukkitTask sweepTask;
 
     public TpaManager(AetherEssentials plugin) {
         this.plugin = plugin;
-    }
-
-    public void start() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                expireStale();
-            }
-        }.runTaskTimer(plugin, 20L, 20L);
     }
 
     public boolean request(Player sender, Player target) {
@@ -39,7 +31,23 @@ public class TpaManager {
             return false;
         }
         requests.put(target.getUniqueId(), new TpaRequest(sender.getUniqueId(), sender.getName(), target.getUniqueId(), System.currentTimeMillis() + TIMEOUT_MILLIS));
+        ensureSweep();
         return true;
+    }
+
+    private void ensureSweep() {
+        if (sweepTask != null && !sweepTask.isCancelled()) {
+            return;
+        }
+        sweepTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                expireStale();
+                if (requests.isEmpty()) {
+                    sweepTask.cancel();
+                }
+            }
+        }.runTaskTimer(plugin, 20L, 20L);
     }
 
     public TpaRequest pending(UUID target) {
