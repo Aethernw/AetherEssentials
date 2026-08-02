@@ -23,6 +23,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public final class AetherEssentials extends JavaPlugin implements CommandExecutor, TabCompleter {
@@ -256,8 +257,14 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("warp-world-unloaded"));
             return;
         }
-        player.teleportAsync(location);
-        player.sendMessage(configManager.message("warp-teleported").replace("{warp}", warp.getName()));
+        player.teleportAsync(location).thenAccept(new Consumer<Boolean>() {
+            @Override
+            public void accept(Boolean success) {
+                if (success) {
+                    player.sendMessage(configManager.message("warp-teleported").replace("{warp}", warp.getName()));
+                }
+            }
+        });
     }
 
     private void warpsCommand(CommandSender sender) {
@@ -304,8 +311,14 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("spawn-not-set"));
             return;
         }
-        player.teleportAsync(spawn);
-        player.sendMessage(configManager.message("spawn-teleported"));
+        player.teleportAsync(spawn).thenAccept(new Consumer<Boolean>() {
+            @Override
+            public void accept(Boolean success) {
+                if (success) {
+                    player.sendMessage(configManager.message("spawn-teleported"));
+                }
+            }
+        });
     }
 
     private void setSpawnCommand(CommandSender sender) {
@@ -476,9 +489,15 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("tpa-offline"));
             return;
         }
-        requester.teleportAsync(player.getLocation());
+        requester.teleportAsync(player.getLocation()).thenAccept(new Consumer<Boolean>() {
+            @Override
+            public void accept(Boolean success) {
+                if (success) {
+                    requester.sendMessage(configManager.message("tpa-accepted-sender").replace("{player}", player.getName()));
+                }
+            }
+        });
         player.sendMessage(configManager.message("tpa-accepted").replace("{player}", requester.getName()));
-        requester.sendMessage(configManager.message("tpa-accepted-sender").replace("{player}", player.getName()));
     }
 
     private void tpadenyCommand(CommandSender sender, String[] args) {
