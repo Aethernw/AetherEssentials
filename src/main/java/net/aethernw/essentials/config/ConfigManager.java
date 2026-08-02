@@ -25,7 +25,7 @@ public class ConfigManager {
     public String message(String key) {
         String value = messages.getString(key);
         if (value == null) {
-            return "&cBilinmeyen mesaj: " + key;
+            return ChatColor.translateAlternateColorCodes('&', "&cBilinmeyen mesaj: " + key);
         }
         return ChatColor.translateAlternateColorCodes('&', value);
     }

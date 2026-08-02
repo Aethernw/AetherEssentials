@@ -24,7 +24,6 @@ public class WarpManager {
         plugin.getDatabaseManager().loadWarps(new Consumer<List<WarpLocation>>() {
             @Override
             public void accept(List<WarpLocation> loaded) {
-                warps.clear();
                 for (WarpLocation warp : loaded) {
                     warps.put(warp.getName(), warp);
                 }

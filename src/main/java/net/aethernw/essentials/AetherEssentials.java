@@ -201,6 +201,11 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("player-not-found"));
             return;
         }
+        if (target.equals(player)) {
+            player.openInventory(player.getEnderChest());
+            player.sendMessage(configManager.message("ec-opened"));
+            return;
+        }
         player.openInventory(target.getEnderChest());
         player.sendMessage(configManager.message("ec-opened-other").replace("{player}", target.getName()));
     }

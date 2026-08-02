@@ -99,6 +99,8 @@ permissions:
   aether.command.repair.all:
     description: Tüm envanteri onarma izni
     default: op
+    children:
+      aether.command.repair: true
   aether.command.feed:
     description: Kendini doyurma izni
     default: true
