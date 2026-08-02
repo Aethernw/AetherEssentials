@@ -11,6 +11,7 @@ import net.aethernw.essentials.model.WarpLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -275,7 +276,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("warp-world-unloaded"));
             return;
         }
-        teleportManager.request(player, location, configManager.message("warp-teleported").replace("{warp}", warp.getName()));
+        teleportManager.request(player, location, Sound.ENTITY_ENDERMAN_TELEPORT, configManager.message("warp-teleported").replace("{warp}", warp.getName()));
     }
 
     private void warpsCommand(CommandSender sender) {
@@ -322,7 +323,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("spawn-not-set"));
             return;
         }
-        teleportManager.request(player, spawn, configManager.message("spawn-teleported"));
+        teleportManager.request(player, spawn, Sound.BLOCK_NOTE_BLOCK_CHIME, configManager.message("spawn-teleported"));
     }
 
     private void setSpawnCommand(CommandSender sender) {
@@ -493,7 +494,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("tpa-offline"));
             return;
         }
-        teleportManager.request(requester, player.getLocation(), configManager.message("tpa-accepted-sender").replace("{player}", player.getName()));
+        teleportManager.request(requester, player.getLocation(), Sound.BLOCK_PORTAL_TRAVEL, configManager.message("tpa-accepted-sender").replace("{player}", player.getName()));
         player.sendMessage(configManager.message("tpa-accepted").replace("{player}", requester.getName()));
     }
 

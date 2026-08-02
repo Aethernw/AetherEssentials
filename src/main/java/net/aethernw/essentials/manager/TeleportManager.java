@@ -59,12 +59,12 @@ public class TeleportManager implements Listener {
         this.plugin = plugin;
     }
 
-    public void request(Player player, Location location, final String message) {
+    public void request(Player player, Location location, final Sound arrivalSound, final String message) {
         int seconds = plugin.getConfigManager().getTeleportDelaySeconds();
         if (!plugin.getConfigManager().isTeleportEnabled()
                 || seconds <= 0
                 || player.hasPermission(BYPASS_PERMISSION)) {
-            teleportNow(player, location, message);
+            teleportNow(player, location, arrivalSound, message);
             return;
         }
         cancelPending(player);
@@ -80,7 +80,7 @@ public class TeleportManager implements Listener {
                     pending.remove(player.getUniqueId());
                     player.sendActionBar("");
                     if (player.isOnline()) {
-                        teleportNow(player, location, message);
+                        teleportNow(player, location, arrivalSound, message);
                     }
                     cancel();
                     return;
@@ -168,23 +168,23 @@ public class TeleportManager implements Listener {
     private void playCountdownSound(Player player, int remaining) {
         switch (remaining) {
             case 1:
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.5f);
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.6f);
                 break;
             case 2:
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 0.5f, 1.0f);
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.2f);
                 break;
             case 3:
-                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 0.8f);
                 break;
         }
     }
 
-    private void teleportNow(Player player, Location location, final String message) {
+    private void teleportNow(Player player, Location location, final Sound arrivalSound, final String message) {
         player.teleportAsync(location).thenAccept(new Consumer<Boolean>() {
             @Override
             public void accept(Boolean success) {
                 if (success) {
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.5f, 1.0f);
+                    player.playSound(player.getLocation(), arrivalSound, 0.5f, 1.0f);
                     player.sendMessage(message);
                 }
             }
