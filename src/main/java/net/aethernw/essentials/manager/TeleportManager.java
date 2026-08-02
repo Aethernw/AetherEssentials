@@ -22,6 +22,36 @@ public class TeleportManager implements Listener {
 
     private static final String BYPASS_PERMISSION = "aether.teleport.bypass";
 
+    private static final String[] COUNTDOWN_COLORS = new String[21];
+
+    static {
+        for (int i = 0; i < COUNTDOWN_COLORS.length; i++) {
+            COUNTDOWN_COLORS[i] = countdownColor(1.0 + i * 0.1);
+        }
+    }
+
+    private static String countdownColor(double value) {
+        int red;
+        int green;
+        if (value >= 2.0) {
+            red = (int) (255.0 - 170.0 * (value - 2.0));
+            green = 255;
+        } else {
+            red = 255;
+            green = (int) (255.0 - 170.0 * (value - 1.0));
+        }
+        return hexColor(red, green, 85);
+    }
+
+    private static String hexColor(int red, int green, int blue) {
+        StringBuilder builder = new StringBuilder("§x");
+        String hex = String.format("%02x%02x%02x", red, green, blue);
+        for (int i = 0; i < hex.length(); i++) {
+            builder.append('§').append(hex.charAt(i));
+        }
+        return builder.toString();
+    }
+
     private final AetherEssentials plugin;
     private final ConcurrentHashMap<UUID, BukkitTask> pending = new ConcurrentHashMap<>();
 
@@ -39,14 +69,14 @@ public class TeleportManager implements Listener {
         }
         cancelPending(player);
         player.sendMessage(plugin.getConfigManager().message("teleport-delay").replace("{seconds}", String.valueOf(seconds)));
-        player.sendActionBar(plugin.getConfigManager().message("teleport-actionbar").replace("{seconds}", String.valueOf(seconds)));
+        final int[] remainingTenths = {seconds * 10};
+        player.sendActionBar(COUNTDOWN_COLORS[colorIndex(remainingTenths[0])] + countdownBarText(remainingTenths[0]));
         playCountdownSound(player, seconds);
-        final int[] remaining = {seconds};
         BukkitTask task = new BukkitRunnable() {
             @Override
             public void run() {
-                remaining[0]--;
-                if (remaining[0] <= 0) {
+                remainingTenths[0]--;
+                if (remainingTenths[0] <= 0) {
                     pending.remove(player.getUniqueId());
                     player.sendActionBar("");
                     if (player.isOnline()) {
@@ -55,11 +85,12 @@ public class TeleportManager implements Listener {
                     cancel();
                     return;
                 }
-                player.sendActionBar(plugin.getConfigManager().message("teleport-actionbar")
-                        .replace("{seconds}", String.valueOf(remaining[0])));
-                playCountdownSound(player, remaining[0]);
+                if (remainingTenths[0] % 10 == 0) {
+                    playCountdownSound(player, remainingTenths[0] / 10);
+                }
+                player.sendActionBar(COUNTDOWN_COLORS[colorIndex(remainingTenths[0])] + countdownBarText(remainingTenths[0]));
             }
-        }.runTaskTimer(plugin, 20L, 20L);
+        }.runTaskTimer(plugin, 2L, 2L);
         pending.put(player.getUniqueId(), task);
     }
 
@@ -116,6 +147,22 @@ public class TeleportManager implements Listener {
             task.cancel();
             player.sendActionBar("");
         }
+    }
+
+    private static int colorIndex(int tenths) {
+        int index = tenths - 10;
+        if (index < 0) {
+            index = 0;
+        }
+        if (index > 20) {
+            index = 20;
+        }
+        return index;
+    }
+
+    private String countdownBarText(int tenths) {
+        return plugin.getConfigManager().message("teleport-actionbar")
+                .replace("{seconds}", (tenths / 10) + "." + (tenths % 10));
     }
 
     private void playCountdownSound(Player player, int remaining) {
