@@ -70,7 +70,8 @@ public class TeleportManager implements Listener {
         cancelPending(player);
         player.sendMessage(plugin.getConfigManager().message("teleport-delay").replace("{seconds}", String.valueOf(seconds)));
         final int[] remainingTenths = {seconds * 10};
-        player.sendActionBar(COUNTDOWN_COLORS[colorIndex(remainingTenths[0])] + countdownBarText(remainingTenths[0]));
+        final String[] barTexts = buildBarTexts(seconds, plugin.getConfigManager().message("teleport-actionbar"));
+        player.sendActionBar(barTexts[remainingTenths[0]]);
         playCountdownSound(player, seconds);
         BukkitTask task = new BukkitRunnable() {
             @Override
@@ -88,7 +89,7 @@ public class TeleportManager implements Listener {
                 if (remainingTenths[0] % 10 == 0) {
                     playCountdownSound(player, remainingTenths[0] / 10);
                 }
-                player.sendActionBar(COUNTDOWN_COLORS[colorIndex(remainingTenths[0])] + countdownBarText(remainingTenths[0]));
+                player.sendActionBar(barTexts[remainingTenths[0]]);
             }
         }.runTaskTimer(plugin, 2L, 2L);
         pending.put(player.getUniqueId(), task);
@@ -160,9 +161,12 @@ public class TeleportManager implements Listener {
         return index;
     }
 
-    private String countdownBarText(int tenths) {
-        return plugin.getConfigManager().message("teleport-actionbar")
-                .replace("{seconds}", (tenths / 10) + "." + (tenths % 10));
+    private static String[] buildBarTexts(int seconds, String template) {
+        String[] texts = new String[seconds * 10 + 1];
+        for (int i = 0; i < texts.length; i++) {
+            texts[i] = COUNTDOWN_COLORS[colorIndex(i)] + template.replace("{seconds}", (i / 10) + "." + (i % 10));
+        }
+        return texts;
     }
 
     private void playCountdownSound(Player player, int remaining) {

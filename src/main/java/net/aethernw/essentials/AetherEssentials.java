@@ -88,7 +88,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        switch (command.getName().toLowerCase()) {
+        switch (command.getName()) {
             case "craft":
                 craftCommand(sender);
                 break;
@@ -141,7 +141,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         if (args.length != 1) {
             return result;
         }
-        String name = command.getName().toLowerCase();
+        String name = command.getName();
         String prefix = args[0].toLowerCase();
         if (name.equals("warp") || name.equals("delwarp")) {
             if (!sender.hasPermission("aether.command." + name)) {
