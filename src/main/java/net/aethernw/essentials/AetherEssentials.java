@@ -141,14 +141,22 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
                     result.add(warpName);
                 }
             }
-        } else if (name.equals("tpa")) {
-            if (!sender.hasPermission("aether.command.tpa")) {
+        } else if (name.equals("tpa") || name.equals("enderchest") || name.equals("feed")) {
+            String permission = "aether.command." + name;
+            if (name.equals("enderchest") || name.equals("feed")) {
+                permission = permission + ".others";
+            }
+            if (!sender.hasPermission(permission)) {
                 return result;
             }
             for (Player online : Bukkit.getOnlinePlayers()) {
                 if (online.getName().toLowerCase().startsWith(prefix)) {
                     result.add(online.getName());
                 }
+            }
+        } else if (name.equals("repair")) {
+            if (sender.hasPermission("aether.command.repair.all") && "all".startsWith(prefix)) {
+                result.add("all");
             }
         } else if (name.equals("tpaccept") || name.equals("tpadeny")) {
             if (!(sender instanceof Player) || !sender.hasPermission("aether.command.tpa")) {
