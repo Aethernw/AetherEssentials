@@ -4,6 +4,7 @@ import net.aethernw.essentials.AetherEssentials;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,7 +19,7 @@ public class TpaManager {
 
     private final AetherEssentials plugin;
     private final ConcurrentHashMap<UUID, TpaRequest> requests = new ConcurrentHashMap<>();
-    private org.bukkit.scheduler.BukkitTask sweepTask;
+    private BukkitTask sweepTask;
 
     public TpaManager(AetherEssentials plugin) {
         this.plugin = plugin;
@@ -30,7 +31,7 @@ public class TpaManager {
             sender.sendMessage(plugin.getConfigManager().message("tpa-already"));
             return false;
         }
-        requests.put(target.getUniqueId(), new TpaRequest(sender.getUniqueId(), sender.getName(), target.getUniqueId(), System.currentTimeMillis() + TIMEOUT_MILLIS));
+        requests.put(target.getUniqueId(), new TpaRequest(sender.getUniqueId(), sender.getName(), System.currentTimeMillis() + TIMEOUT_MILLIS));
         ensureSweep();
         return true;
     }
@@ -76,9 +77,9 @@ public class TpaManager {
 
     public List<String> getPendingSenderNames(UUID target) {
         List<String> names = new ArrayList<>();
-        for (TpaRequest request : requests.values()) {
-            if (request.getTarget().equals(target) && !request.isExpired()) {
-                names.add(request.getSenderName());
+        for (Map.Entry<UUID, TpaRequest> entry : requests.entrySet()) {
+            if (entry.getKey().equals(target) && !entry.getValue().isExpired()) {
+                names.add(entry.getValue().getSenderName());
             }
         }
         return names;
@@ -117,13 +118,11 @@ public class TpaManager {
 
         private final UUID sender;
         private final String senderName;
-        private final UUID target;
         private final long expiresAt;
 
-        public TpaRequest(UUID sender, String senderName, UUID target, long expiresAt) {
+        public TpaRequest(UUID sender, String senderName, long expiresAt) {
             this.sender = sender;
             this.senderName = senderName;
-            this.target = target;
             this.expiresAt = expiresAt;
         }
 
@@ -133,10 +132,6 @@ public class TpaManager {
 
         public String getSenderName() {
             return senderName;
-        }
-
-        public UUID getTarget() {
-            return target;
         }
 
         public long getExpiresAt() {

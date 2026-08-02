@@ -94,11 +94,15 @@ public class DatabaseManager {
             Bukkit.getScheduler().runTask(plugin, new Runnable() {
                 @Override
                 public void run() {
-                    callback.accept(new ArrayList<WarpLocation>());
+                    callback.accept(new ArrayList<>());
                 }
             });
             return;
         }
+        loadWarpsAsync(callback, 0);
+    }
+
+    private void loadWarpsAsync(final Consumer<List<WarpLocation>> callback, final int attempt) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
             public void run() {
@@ -112,12 +116,24 @@ public class DatabaseManager {
                                 result.getFloat("yaw"), result.getFloat("pitch")));
                     }
                 } catch (SQLException e) {
-                    plugin.getLogger().log(Level.SEVERE, "Warp verileri yüklenemedi", e);
+                    if (attempt < CREATE_TABLES_RETRIES - 1) {
+                        plugin.getLogger().log(Level.WARNING, "Warp verileri yüklenemedi, yeniden deneniyor (" + (attempt + 1) + "/" + CREATE_TABLES_RETRIES + ")", e);
+                        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, new Runnable() {
+                            @Override
+                            public void run() {
+                                loadWarpsAsync(callback, attempt + 1);
+                            }
+                        }, 200L);
+                    } else {
+                        plugin.getLogger().log(Level.SEVERE, "Warp verileri " + CREATE_TABLES_RETRIES + " denemeden sonra yüklenemedi", e);
+                    }
+                    return;
                 }
+                final List<WarpLocation> loaded = warps;
                 Bukkit.getScheduler().runTask(plugin, new Runnable() {
                     @Override
                     public void run() {
-                        callback.accept(warps);
+                        callback.accept(loaded);
                     }
                 });
             }

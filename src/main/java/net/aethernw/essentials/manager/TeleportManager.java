@@ -38,7 +38,7 @@ public class TeleportManager implements Listener {
             green = 255;
         } else {
             red = 255;
-            green = (int) (255.0 - 170.0 * (value - 1.0));
+            green = (int) (85.0 + 170.0 * (value - 1.0));
         }
         return hexColor(red, green, 85);
     }

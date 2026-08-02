@@ -408,6 +408,9 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             return false;
         }
         Damageable damageable = (Damageable) meta;
+        if (damageable.getDamage() == 0) {
+            return false;
+        }
         damageable.setDamage(0);
         item.setItemMeta(meta);
         return true;
@@ -497,7 +500,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("tpa-no-request"));
             return;
         }
-        tpaManager.remove(request.getTarget());
+        tpaManager.remove(player.getUniqueId());
         Player requester = Bukkit.getPlayer(request.getSender());
         if (requester == null) {
             player.sendMessage(configManager.message("tpa-offline"));
@@ -527,7 +530,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("tpa-no-request"));
             return;
         }
-        tpaManager.remove(request.getTarget());
+        tpaManager.remove(player.getUniqueId());
         player.sendMessage(configManager.message("tpa-denied").replace("{player}", request.getSenderName()));
         Player requester = Bukkit.getPlayer(request.getSender());
         if (requester != null) {
