@@ -5,3 +5,4 @@ dependency-reduced-pom.xml
 .vscode/
 *.class
 *.log
+*.png
