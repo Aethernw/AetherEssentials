@@ -15,9 +15,14 @@ public class WarpManager {
 
     private final AetherEssentials plugin;
     private final ConcurrentHashMap<String, WarpLocation> warps = new ConcurrentHashMap<>();
+    private volatile List<String> warpNames;
 
     public WarpManager(AetherEssentials plugin) {
         this.plugin = plugin;
+    }
+
+    private void invalidateWarpNames() {
+        warpNames = null;
     }
 
     public void loadWarps() {
@@ -27,6 +32,7 @@ public class WarpManager {
                 for (WarpLocation warp : loaded) {
                     warps.put(warp.getName(), warp);
                 }
+                invalidateWarpNames();
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
                     @Override
                     public void run() {
@@ -41,6 +47,7 @@ public class WarpManager {
     public void setWarp(String name, Location location) {
         WarpLocation warp = WarpLocation.fromLocation(name.toLowerCase(), location);
         warps.put(warp.getName(), warp);
+        invalidateWarpNames();
         plugin.getDatabaseManager().saveWarp(warp);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
@@ -55,6 +62,7 @@ public class WarpManager {
         if (warps.remove(key) == null) {
             return false;
         }
+        invalidateWarpNames();
         plugin.getDatabaseManager().deleteWarp(key);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
@@ -70,8 +78,13 @@ public class WarpManager {
     }
 
     public List<String> getWarpNames() {
-        List<String> names = new ArrayList<>(warps.keySet());
-        Collections.sort(names);
+        List<String> names = warpNames;
+        if (names == null) {
+            List<String> sorted = new ArrayList<>(warps.keySet());
+            Collections.sort(sorted);
+            names = Collections.unmodifiableList(sorted);
+            warpNames = names;
+        }
         return names;
     }
 }

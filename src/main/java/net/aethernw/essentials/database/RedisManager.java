@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Pipeline;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -50,10 +51,12 @@ public class RedisManager {
             return;
         }
         try (Jedis jedis = pool.getResource()) {
-            jedis.del(WARPS_KEY);
+            Pipeline pipeline = jedis.pipelined();
+            pipeline.del(WARPS_KEY);
             for (WarpLocation warp : warps) {
-                jedis.hset(WARPS_KEY, warp.getName(), warp.serialize());
+                pipeline.hset(WARPS_KEY, warp.getName(), warp.serialize());
             }
+            pipeline.sync();
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Warp cache güncellenemedi", e);
         }
