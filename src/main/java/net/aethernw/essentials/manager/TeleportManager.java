@@ -86,7 +86,9 @@ public class TeleportManager implements Listener {
         }
         Location from = event.getFrom();
         Location to = event.getTo();
-        if (to == null || from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()) {
+        if (to == null || from.getBlockX() != to.getBlockX()
+                || from.getBlockY() != to.getBlockY()
+                || from.getBlockZ() != to.getBlockZ()) {
             cancelAndNotify(player);
         }
     }
