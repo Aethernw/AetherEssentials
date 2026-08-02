@@ -1,5 +1,7 @@
 # AetherEssentials
 
+![AetherEssentials](AetherEssentials.png)
+
 Official essentials plugin for Aethernw, built for Paper 1.20+ servers.
 
 A high-performance essentials plugin with MySQL-backed warps, spawn management, item repair, hunger restore and a complete teleport request (TPA) system. All database and I/O operations run asynchronously so the server thread is never blocked.
