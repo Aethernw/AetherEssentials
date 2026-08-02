@@ -24,12 +24,12 @@ public class TpaManager {
     }
 
     public void start() {
-        Bukkit.getScheduler().runTaskTimer(plugin, new BukkitRunnable() {
+        new BukkitRunnable() {
             @Override
             public void run() {
                 expireStale();
             }
-        }, 20L, 20L);
+        }.runTaskTimer(plugin, 20L, 20L);
     }
 
     public boolean request(Player sender, Player target) {
