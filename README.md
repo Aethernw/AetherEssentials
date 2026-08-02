@@ -1,3 +1,3 @@
 # AetherEssentials
 
-![AetherEssentials](aetheressentials2.png)
+![AetherEssentials](aetheressentials3.png)
