@@ -24,7 +24,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public final class AetherEssentials extends JavaPlugin implements CommandExecutor, TabCompleter {
@@ -487,14 +486,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("tpa-offline"));
             return;
         }
-        requester.teleportAsync(player.getLocation()).thenAccept(new Consumer<Boolean>() {
-            @Override
-            public void accept(Boolean success) {
-                if (success) {
-                    requester.sendMessage(configManager.message("tpa-accepted-sender").replace("{player}", player.getName()));
-                }
-            }
-        });
+        teleportManager.request(requester, player.getLocation(), configManager.message("tpa-accepted-sender").replace("{player}", player.getName()));
         player.sendMessage(configManager.message("tpa-accepted").replace("{player}", requester.getName()));
     }
 
