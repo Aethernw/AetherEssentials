@@ -13,6 +13,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -29,14 +30,14 @@ public class TeleportManager implements Listener {
     }
 
     public void request(Player player, Location location, final String message) {
+        int seconds = plugin.getConfigManager().getTeleportDelaySeconds();
         if (!plugin.getConfigManager().isTeleportEnabled()
-                || plugin.getConfigManager().getTeleportDelaySeconds() <= 0
+                || seconds <= 0
                 || player.hasPermission(BYPASS_PERMISSION)) {
             teleportNow(player, location, message);
             return;
         }
         cancelPending(player);
-        final int seconds = plugin.getConfigManager().getTeleportDelaySeconds();
         player.sendMessage(plugin.getConfigManager().message("teleport-delay").replace("{seconds}", String.valueOf(seconds)));
         player.sendActionBar(plugin.getConfigManager().message("teleport-actionbar").replace("{seconds}", String.valueOf(seconds)));
         playCountdownSound(player, seconds);
@@ -67,14 +68,12 @@ public class TeleportManager implements Listener {
     }
 
     public void shutdown() {
-        for (UUID uuid : pending.keySet()) {
-            Player player = Bukkit.getPlayer(uuid);
+        for (Map.Entry<UUID, BukkitTask> entry : pending.entrySet()) {
+            Player player = Bukkit.getPlayer(entry.getKey());
             if (player != null) {
                 player.sendActionBar("");
             }
-        }
-        for (BukkitTask task : pending.values()) {
-            task.cancel();
+            entry.getValue().cancel();
         }
         pending.clear();
     }
@@ -82,7 +81,7 @@ public class TeleportManager implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (!plugin.getConfigManager().isCancelOnMove() || !pending.containsKey(player.getUniqueId())) {
+        if (!pending.containsKey(player.getUniqueId()) || !plugin.getConfigManager().isCancelOnMove()) {
             return;
         }
         Location from = event.getFrom();
@@ -94,13 +93,14 @@ public class TeleportManager implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerDamage(EntityDamageEvent event) {
-        if (!plugin.getConfigManager().isCancelOnDamage() || !(event.getEntity() instanceof Player)) {
+        if (!(event.getEntity() instanceof Player)) {
             return;
         }
         Player player = (Player) event.getEntity();
-        if (pending.containsKey(player.getUniqueId())) {
-            cancelAndNotify(player);
+        if (!pending.containsKey(player.getUniqueId()) || !plugin.getConfigManager().isCancelOnDamage()) {
+            return;
         }
+        cancelAndNotify(player);
     }
 
     private void cancelAndNotify(Player player) {
