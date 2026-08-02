@@ -21,3 +21,9 @@ spawn:
   z: 0.0
   yaw: 0.0
   pitch: 0.0
+
+teleport:
+  enabled: true
+  delay-seconds: 3
+  cancel-on-move: true
+  cancel-on-damage: true

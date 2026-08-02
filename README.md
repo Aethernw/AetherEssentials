@@ -18,4 +18,5 @@
 - `aether.command.feed` - Feed yourself
 - `aether.command.feed.others` - Feed other players
 - `aether.command.tpa` - TPA commands
+- `aether.teleport.bypass` - Bypass spawn/warp teleport delay
 - `aether.*` - All permissions

@@ -5,6 +5,7 @@ import net.aethernw.essentials.database.DatabaseManager;
 import net.aethernw.essentials.database.RedisManager;
 import net.aethernw.essentials.manager.TpaManager;
 import net.aethernw.essentials.manager.TpaManager.TpaRequest;
+import net.aethernw.essentials.manager.TeleportManager;
 import net.aethernw.essentials.manager.WarpManager;
 import net.aethernw.essentials.model.WarpLocation;
 import org.bukkit.Bukkit;
@@ -35,6 +36,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
     private RedisManager redisManager;
     private WarpManager warpManager;
     private TpaManager tpaManager;
+    private TeleportManager teleportManager;
 
     @Override
     public void onEnable() {
@@ -45,6 +47,8 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         redisManager = new RedisManager(this);
         warpManager = new WarpManager(this);
         tpaManager = new TpaManager(this);
+        teleportManager = new TeleportManager(this);
+        Bukkit.getPluginManager().registerEvents(teleportManager, this);
 
         String[] allCommands = {"craft", "enderchest", "setwarp", "warp", "warps",
                 "delwarp", "spawn", "setspawn", "repair", "feed",
@@ -265,14 +269,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("warp-world-unloaded"));
             return;
         }
-        player.teleportAsync(location).thenAccept(new Consumer<Boolean>() {
-            @Override
-            public void accept(Boolean success) {
-                if (success) {
-                    player.sendMessage(configManager.message("warp-teleported").replace("{warp}", warp.getName()));
-                }
-            }
-        });
+        teleportManager.request(player, location, configManager.message("warp-teleported").replace("{warp}", warp.getName()));
     }
 
     private void warpsCommand(CommandSender sender) {
@@ -319,14 +316,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("spawn-not-set"));
             return;
         }
-        player.teleportAsync(spawn).thenAccept(new Consumer<Boolean>() {
-            @Override
-            public void accept(Boolean success) {
-                if (success) {
-                    player.sendMessage(configManager.message("spawn-teleported"));
-                }
-            }
-        });
+        teleportManager.request(player, spawn, configManager.message("spawn-teleported"));
     }
 
     private void setSpawnCommand(CommandSender sender) {
@@ -572,5 +562,9 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
 
     public TpaManager getTpaManager() {
         return tpaManager;
+    }
+
+    public TeleportManager getTeleportManager() {
+        return teleportManager;
     }
 }

@@ -110,6 +110,9 @@ permissions:
   aether.command.tpa:
     description: Işınlanma isteği gönderme izni
     default: true
+  aether.teleport.bypass:
+    description: Spawn ve warp ışınlanma gecikmesinden muaf olma izni
+    default: op
   aether.*:
     description: Tüm AetherEssentials izinleri
     default: op
@@ -128,3 +131,4 @@ permissions:
       aether.command.feed: true
       aether.command.feed.others: true
       aether.command.tpa: true
+      aether.teleport.bypass: true

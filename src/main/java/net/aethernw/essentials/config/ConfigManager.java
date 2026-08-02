@@ -39,6 +39,22 @@ public class ConfigManager {
         return config.getLocation("spawn");
     }
 
+    public boolean isTeleportEnabled() {
+        return config.getBoolean("teleport.enabled", true);
+    }
+
+    public int getTeleportDelaySeconds() {
+        return config.getInt("teleport.delay-seconds", 3);
+    }
+
+    public boolean isCancelOnMove() {
+        return config.getBoolean("teleport.cancel-on-move", true);
+    }
+
+    public boolean isCancelOnDamage() {
+        return config.getBoolean("teleport.cancel-on-damage", true);
+    }
+
     public void setSpawnLocation(Location location) {
         config.set("spawn", location);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
