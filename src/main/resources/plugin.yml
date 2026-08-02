@@ -1,0 +1,128 @@
+name: AetherEssentials
+version: '1.0.0'
+main: net.aethernw.essentials.AetherEssentials
+api-version: '1.20'
+authors: [ToprakDev]
+description: Yüksek performanslı essentials eklentisi
+
+commands:
+  craft:
+    description: Sanal çalışma masası açar
+    usage: /craft
+    aliases: [workbench, wb]
+    permission: aether.command.craft
+  enderchest:
+    description: Ender Sandık envanterini açar
+    usage: /enderchest [oyuncu]
+    aliases: [ec]
+    permission: aether.command.enderchest
+  setwarp:
+    description: Yeni bir warp oluşturur
+    usage: /setwarp <isim>
+    permission: aether.command.setwarp
+  warp:
+    description: Bir warpa ışınlanır
+    usage: /warp <isim>
+    permission: aether.command.warp
+  warps:
+    description: Warp listesini gösterir
+    usage: /warps
+    permission: aether.command.warps
+  delwarp:
+    description: Bir warpı siler
+    usage: /delwarp <isim>
+    permission: aether.command.delwarp
+  spawn:
+    description: Spawn noktasına ışınlanır
+    usage: /spawn
+    permission: aether.command.spawn
+  setspawn:
+    description: Spawn noktasını ayarlar
+    usage: /setspawn
+    permission: aether.command.setspawn
+  repair:
+    description: Eşyaları onarır
+    usage: /repair [all]
+    permission: aether.command.repair
+  feed:
+    description: Açlık ve doygunluğu doldurur
+    usage: /feed [oyuncu]
+    permission: aether.command.feed
+  tpa:
+    description: Bir oyuncuya ışınlanma isteği gönderir
+    usage: /tpa <oyuncu>
+    permission: aether.command.tpa
+  tpaccept:
+    description: Işınlanma isteğini kabul eder
+    usage: /tpaccept [oyuncu]
+    permission: aether.command.tpa
+  tpadeny:
+    description: Işınlanma isteğini reddeder
+    usage: /tpadeny [oyuncu]
+    permission: aether.command.tpa
+  tpacancel:
+    description: Gönderilen ışınlanma isteklerini iptal eder
+    usage: /tpacancel
+    permission: aether.command.tpa
+
+permissions:
+  aether.command.craft:
+    description: Sanal çalışma masası açma izni
+    default: true
+  aether.command.enderchest:
+    description: Ender Sandık açma izni
+    default: true
+  aether.command.enderchest.others:
+    description: Başka oyuncunun Ender Sandığını açma izni
+    default: op
+  aether.command.setwarp:
+    description: Warp oluşturma izni
+    default: op
+  aether.command.warp:
+    description: Warpa ışınlanma izni
+    default: true
+  aether.command.warps:
+    description: Warp listesini görme izni
+    default: true
+  aether.command.delwarp:
+    description: Warp silme izni
+    default: op
+  aether.command.spawn:
+    description: Spawna ışınlanma izni
+    default: true
+  aether.command.setspawn:
+    description: Spawn ayarlama izni
+    default: op
+  aether.command.repair:
+    description: Eldeki eşyayı onarma izni
+    default: true
+  aether.command.repair.all:
+    description: Tüm envanteri onarma izni
+    default: op
+  aether.command.feed:
+    description: Kendini doyurma izni
+    default: true
+  aether.command.feed.others:
+    description: Başkasını doyurma izni
+    default: op
+  aether.command.tpa:
+    description: Işınlanma isteği gönderme izni
+    default: true
+  aether.*:
+    description: Tüm AetherEssentials izinleri
+    default: op
+    children:
+      aether.command.craft: true
+      aether.command.enderchest: true
+      aether.command.enderchest.others: true
+      aether.command.setwarp: true
+      aether.command.warp: true
+      aether.command.warps: true
+      aether.command.delwarp: true
+      aether.command.spawn: true
+      aether.command.setspawn: true
+      aether.command.repair: true
+      aether.command.repair.all: true
+      aether.command.feed: true
+      aether.command.feed.others: true
+      aether.command.tpa: true
