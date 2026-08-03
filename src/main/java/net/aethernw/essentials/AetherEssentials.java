@@ -48,8 +48,8 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         Bukkit.getPluginManager().registerEvents(teleportManager, this);
 
         String[] allCommands = {"craft", "enderchest", "setwarp", "warp", "warps",
-                "delwarp", "spawn", "setspawn", "repair", "feed",
-                "tpa", "tpaccept", "tpadeny", "tpacancel"};
+                "delwarp", "spawn", "setspawn", "repair", "repairall", "feed",
+                "tpa", "tpahere", "tpaccept", "tpadeny", "tpacancel", "tpignore"};
         String permissionMessage = configManager.message("no-permission");
         for (String cmdName : allCommands) {
             this.getCommand(cmdName).setExecutor(this);
@@ -58,6 +58,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         this.getCommand("warp").setTabCompleter(this);
         this.getCommand("delwarp").setTabCompleter(this);
         this.getCommand("tpa").setTabCompleter(this);
+        this.getCommand("tpahere").setTabCompleter(this);
         this.getCommand("tpaccept").setTabCompleter(this);
         this.getCommand("tpadeny").setTabCompleter(this);
 
@@ -109,11 +110,17 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             case "repair":
                 repairCommand(sender, args);
                 break;
+            case "repairall":
+                repairAllCommand(sender, args);
+                break;
             case "feed":
                 feedCommand(sender, args);
                 break;
             case "tpa":
                 tpaCommand(sender, args);
+                break;
+            case "tpahere":
+                tpaHereCommand(sender, args);
                 break;
             case "tpaccept":
                 tpacceptCommand(sender, args);
@@ -123,6 +130,9 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
                 break;
             case "tpacancel":
                 tpacancelCommand(sender);
+                break;
+            case "tpignore":
+                tpignoreCommand(sender, args);
                 break;
         }
         return true;
@@ -145,7 +155,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
                     result.add(warpName);
                 }
             }
-        } else if (name.equals("tpa") || name.equals("enderchest") || name.equals("feed")) {
+        } else if (name.equals("tpa") || name.equals("tpahere") || name.equals("enderchest") || name.equals("feed")) {
             String permission = "aether.command." + name;
             if (name.equals("enderchest") || name.equals("feed")) {
                 permission = permission + ".others";
@@ -158,9 +168,15 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
                     result.add(online.getName());
                 }
             }
-        } else if (name.equals("repair")) {
-            if (sender.hasPermission("aether.command.repair.all") && "all".startsWith(prefix)) {
-                result.add("all");
+        } else if (name.equals("repairall")) {
+            if (!sender.hasPermission("aether.command.repair.all")) {
+                return result;
+            }
+        } else if (name.equals("tpignore")) {
+            for (Player online : Bukkit.getOnlinePlayers()) {
+                if (online.getName().toLowerCase().startsWith(prefix)) {
+                    result.add(online.getName());
+                }
             }
         } else if (name.equals("tpaccept") || name.equals("tpadeny")) {
             if (!(sender instanceof Player) || !sender.hasPermission("aether.command.tpa")) {
@@ -351,19 +367,6 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             return;
         }
         Player player = (Player) sender;
-        if (args.length > 1) {
-            player.sendMessage(configManager.message("invalid-usage"));
-            return;
-        }
-        if (args.length > 0 && args[0].equalsIgnoreCase("all")) {
-            if (!player.hasPermission("aether.command.repair.all")) {
-                player.sendMessage(configManager.message("no-permission"));
-                return;
-            }
-            int count = repairAll(player);
-            player.sendMessage(configManager.message("repaired-all").replace("{count}", String.valueOf(count)));
-            return;
-        }
         if (args.length > 0) {
             player.sendMessage(configManager.message("invalid-usage"));
             return;
@@ -378,6 +381,24 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         } else {
             player.sendMessage(configManager.message("repaired"));
         }
+    }
+
+    private void repairAllCommand(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(configManager.message("player-only"));
+            return;
+        }
+        Player player = (Player) sender;
+        if (args.length > 0) {
+            player.sendMessage(configManager.message("invalid-usage"));
+            return;
+        }
+        if (!player.hasPermission("aether.command.repair.all")) {
+            player.sendMessage(configManager.message("no-permission"));
+            return;
+        }
+        int count = repairAll(player);
+        player.sendMessage(configManager.message("repaired-all").replace("{count}", String.valueOf(count)));
     }
 
     private int repairAll(Player player) {
@@ -469,15 +490,29 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("player-not-found"));
             return;
         }
-        if (target.equals(player)) {
-            player.sendMessage(configManager.message("tpa-self"));
+        tpaManager.request(player, target, TpaRequest.Type.TO);
+    }
+
+    private void tpaHereCommand(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(configManager.message("player-only"));
             return;
         }
-        if (!tpaManager.request(player, target)) {
+        Player player = (Player) sender;
+        if (!player.hasPermission("aether.command.tpa")) {
+            player.sendMessage(configManager.message("no-permission"));
             return;
         }
-        player.sendMessage(configManager.message("tpa-sent").replace("{player}", target.getName()));
-        target.sendMessage(configManager.message("tpa-received").replace("{player}", player.getName()));
+        if (args.length != 1) {
+            player.sendMessage(configManager.message("tpahere-usage"));
+            return;
+        }
+        Player target = Bukkit.getPlayerExact(args[0]);
+        if (target == null) {
+            player.sendMessage(configManager.message("player-not-found"));
+            return;
+        }
+        tpaManager.request(player, target, TpaRequest.Type.HERE);
     }
 
     private void tpacceptCommand(CommandSender sender, String[] args) {
@@ -492,7 +527,16 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         }
         TpaRequest request;
         if (args.length == 0) {
-            request = tpaManager.pending(player.getUniqueId());
+            List<TpaRequest> pendingRequests = tpaManager.getPendingRequests(player.getUniqueId());
+            if (pendingRequests.isEmpty()) {
+                player.sendMessage(configManager.message("tpa-no-request"));
+                return;
+            }
+            if (pendingRequests.size() > 1) {
+                player.sendMessage(configManager.message("tpa-multiple-requests"));
+                return;
+            }
+            request = pendingRequests.get(0);
         } else {
             request = tpaManager.pending(player.getUniqueId(), args[0]);
         }
@@ -500,14 +544,7 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("tpa-no-request"));
             return;
         }
-        tpaManager.remove(player.getUniqueId());
-        Player requester = Bukkit.getPlayer(request.getSender());
-        if (requester == null) {
-            player.sendMessage(configManager.message("tpa-offline"));
-            return;
-        }
-        teleportManager.request(requester, player.getLocation(), Sound.BLOCK_PORTAL_TRAVEL, configManager.message("tpa-accepted-sender").replace("{player}", player.getName()));
-        player.sendMessage(configManager.message("tpa-accepted").replace("{player}", requester.getName()));
+        acceptRequest(player, request);
     }
 
     private void tpadenyCommand(CommandSender sender, String[] args) {
@@ -522,7 +559,16 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         }
         TpaRequest request;
         if (args.length == 0) {
-            request = tpaManager.pending(player.getUniqueId());
+            List<TpaRequest> pendingRequests = tpaManager.getPendingRequests(player.getUniqueId());
+            if (pendingRequests.isEmpty()) {
+                player.sendMessage(configManager.message("tpa-no-request"));
+                return;
+            }
+            if (pendingRequests.size() > 1) {
+                player.sendMessage(configManager.message("tpa-multiple-requests"));
+                return;
+            }
+            request = pendingRequests.get(0);
         } else {
             request = tpaManager.pending(player.getUniqueId(), args[0]);
         }
@@ -530,11 +576,27 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
             player.sendMessage(configManager.message("tpa-no-request"));
             return;
         }
-        tpaManager.remove(player.getUniqueId());
+        tpaManager.remove(player.getUniqueId(), request.getSender());
         player.sendMessage(configManager.message("tpa-denied").replace("{player}", request.getSenderName()));
         Player requester = Bukkit.getPlayer(request.getSender());
         if (requester != null) {
             requester.sendMessage(configManager.message("tpa-denied-sender").replace("{player}", player.getName()));
+        }
+    }
+
+    private void acceptRequest(Player player, TpaRequest request) {
+        Player requester = Bukkit.getPlayer(request.getSender());
+        if (requester == null) {
+            player.sendMessage(configManager.message("tpa-offline"));
+            return;
+        }
+        tpaManager.remove(player.getUniqueId(), request.getSender());
+        if (request.getType() == TpaRequest.Type.TO) {
+            teleportManager.request(requester, player.getLocation(), Sound.BLOCK_PORTAL_TRAVEL, configManager.message("tpa-accepted-sender").replace("{player}", player.getName()));
+            player.sendMessage(configManager.message("tpa-accepted").replace("{player}", requester.getName()));
+        } else {
+            teleportManager.request(player, requester.getLocation(), Sound.BLOCK_PORTAL_TRAVEL, configManager.message("tpahere-accepted").replace("{player}", requester.getName()));
+            requester.sendMessage(configManager.message("tpahere-accepted-sender").replace("{player}", player.getName()));
         }
     }
 
@@ -554,6 +616,34 @@ public final class AetherEssentials extends JavaPlugin implements CommandExecuto
         } else {
             player.sendMessage(configManager.message("tpa-no-request"));
         }
+    }
+
+    private void tpignoreCommand(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(configManager.message("player-only"));
+            return;
+        }
+        Player player = (Player) sender;
+        if (!player.hasPermission("aether.command.tpignore")) {
+            player.sendMessage(configManager.message("no-permission"));
+            return;
+        }
+        if (args.length == 0) {
+            boolean ignoring = tpaManager.toggleIgnoreAll(player.getUniqueId());
+            player.sendMessage(configManager.message(ignoring ? "tpa-ignoring-all" : "tpa-not-ignoring-all"));
+            return;
+        }
+        if (args.length != 1) {
+            player.sendMessage(configManager.message("invalid-usage"));
+            return;
+        }
+        Player target = Bukkit.getPlayerExact(args[0]);
+        if (target == null) {
+            player.sendMessage(configManager.message("player-not-found"));
+            return;
+        }
+        boolean ignoring = tpaManager.toggleIgnore(player.getUniqueId(), target.getUniqueId());
+        player.sendMessage(configManager.message(ignoring ? "tpa-ignoring" : "tpa-not-ignoring").replace("{player}", target.getName()));
     }
 
     public ConfigManager getConfigManager() {

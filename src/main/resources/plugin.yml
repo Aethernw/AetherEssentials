@@ -9,7 +9,6 @@ commands:
   craft:
     description: Open a virtual crafting table
     usage: /craft
-    aliases: [workbench, wb]
     permission: aether.command.craft
   enderchest:
     description: Open your Ender Chest
@@ -41,9 +40,13 @@ commands:
     usage: /setspawn
     permission: aether.command.setspawn
   repair:
-    description: Repair your items
-    usage: /repair [all]
+    description: Repair the item in your hand
+    usage: /repair
     permission: aether.command.repair
+  repairall:
+    description: Repair everything in your inventory
+    usage: /repairall
+    permission: aether.command.repair.all
   feed:
     description: Restore hunger and saturation
     usage: /feed [player]
@@ -51,6 +54,10 @@ commands:
   tpa:
     description: Send a teleport request to a player
     usage: /tpa <player>
+    permission: aether.command.tpa
+  tpahere:
+    description: Ask a player to teleport to you
+    usage: /tpahere <player>
     permission: aether.command.tpa
   tpaccept:
     description: Accept a teleport request
@@ -64,6 +71,10 @@ commands:
     description: Cancel your sent teleport requests
     usage: /tpacancel
     permission: aether.command.tpa
+  tpignore:
+    description: Ignore teleport requests from a player
+    usage: /tpignore [player]
+    permission: aether.command.tpignore
 
 permissions:
   aether.command.craft:
@@ -110,6 +121,9 @@ permissions:
   aether.command.tpa:
     description: Teleport request commands
     default: true
+  aether.command.tpignore:
+    description: Ignore teleport requests
+    default: true
   aether.teleport.bypass:
     description: Bypass the spawn/warp teleport delay
     default: op
@@ -131,4 +145,5 @@ permissions:
       aether.command.feed: true
       aether.command.feed.others: true
       aether.command.tpa: true
+      aether.command.tpignore: true
       aether.teleport.bypass: true
